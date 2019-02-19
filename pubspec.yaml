@@ -1,0 +1,9 @@
+name: sqljocky5_recovery
+version: 1.0.0
+description: "Recovery testing of sqljocky5"
+
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+
+dependencies:
+  sqljocky5: "^2.2.1"
