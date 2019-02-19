@@ -14,8 +14,7 @@ import 'package:sqljocky5/connection/connection.dart'; // for Transaction class
 // TODO: edit to match the database used for testing
 
 final dbSettings = new ConnectionSettings(
-    //host: 'testhost.example.com',
-    host: 'test-api.qriscloud.org.au',
+    host: 'test.example.com',
     port: 3306,
     useSSL: false,
     user: 'tester',
@@ -365,6 +364,9 @@ Future runCycle(int n) async {
       if (pauseLocation == PauseLocation.beforeCommit) {
         doPause(allowException: true);
       }
+      if (pauseLocation == PauseLocation.beforeRollback) {
+        throw new ApplicationException(); // otherwise rollback won't occur
+      }
 
       await tx.commit();
     } catch (e) {
@@ -376,7 +378,7 @@ Future runCycle(int n) async {
 
       try {
         if (pauseLocation == PauseLocation.beforeRollback) {
-          doPause(allowException: true);
+          doPause(allowException: false);
         }
 
         await tx.rollback();
