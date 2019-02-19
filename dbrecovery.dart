@@ -58,6 +58,10 @@ String nameOf(PauseLocation value) {
 
 class ApplicationException implements Exception {}
 
+/// Exception to indicate the user wants to cleanly exit the program.
+
+class QuitException implements Exception {}
+
 //================================================================
 // Mode
 
@@ -115,7 +119,7 @@ void doPause({String name, bool allowException = false}) {
       } else if (allowException && (line == 'exception' || line == 'e')) {
         throw new ApplicationException();
       } else if (line == 'quit' || line == 'q') {
-        exit(0);
+        throw new QuitException();
       } else {
         stderr.write('invalid input\n');
         inputOk = false;
@@ -451,7 +455,14 @@ void main(List<String> arguments) async {
       await runCycle(n++);
     }
   } catch (e, st) {
-    // This should never happen.
-    stderr.write('Error: uncaught exception: $e\nStack trace: $st\n');
+    if (e is QuitException) {
+      // Clean exit
+      if (connection != null) {
+        await connection.close();
+      }
+    } else {
+      // Unexpected exception: this should never happen.
+      stderr.write('Error: uncaught exception: $e\nStack trace: $st\n');
+    }
   }
 }
