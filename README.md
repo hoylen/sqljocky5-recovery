@@ -27,9 +27,9 @@ By default, it starts in interactive mode.
 
 The _pauseLocation_ indicates when the pause occurs:
 
-- beforeNextCycle (the default)
+- beforeNextCycle
 - beforeGetTransaction
-- beforeQuery
+- beforeQuery (the default)
 - beforeCommit
 - beforeRollback
 
@@ -53,7 +53,7 @@ reboot situation), there is no guarantee the database will come up
 before the Web server.
 
 1. Stop the database.
-2. Run `dart dbrecovery.dart`
+2. Run `dart dbrecovery.dart beforeNextCycle`
 3. Run a few cycles.
 4. Start the database.
 5. Run a few more cycles.
@@ -69,7 +69,7 @@ The database is cleanly stopped and is restarted. For example, if the
 database administrator restarts the database or reboots the database's
 host.
 
-1. Start the database and run `dart dbrecovery.dart`.
+1. Start the database and run `dart dbrecovery.dart beforeNextCycle`.
 2. Run a few cycles.
 3. Stop the database cleanly (e.g. with `systemctl stop mariadb.service`).
 4. Run a few more cycles.

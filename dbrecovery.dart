@@ -38,7 +38,7 @@ enum PauseLocation {
 
 /// Location for pause (can be changed via command line arguments)
 
-var pauseLocation = PauseLocation.beforeNextCycle;
+var pauseLocation = PauseLocation.beforeQuery;
 
 /// Duration of the pause when running in non-interactive mode.
 
@@ -251,6 +251,14 @@ bool isDatabaseException(Object e) {
         e.message == 'Socket has been closed') {
       knownIssue = true;
     }
+
+    if (e.osError != null &&
+        e.osError.errorCode == 60 &&
+        e.osError.message == 'Operation timed out' &&
+        e.message == '') {
+      // Host is not running
+      knownIssue = true;
+    }
   }
   if (e is MySqlException) {
     if (e.errorNumber == 1927 &&
@@ -373,6 +381,8 @@ Future runCycle(int n) async {
       }
 
       await tx.commit();
+
+      print('$n: ok');
     } catch (e) {
       final okIfRollbackFails = isDatabaseException(e);
 
@@ -393,11 +403,10 @@ Future runCycle(int n) async {
               '\nWarning: unexpected exception (rollback): ${e2.runtimeType}: $e2');
         }
       }
+      connection = null; // use a new connection for the next cycle
+
+      print('$n: failed');
     }
-
-    // Success
-
-    print('$n: ok');
   } else {
     print('$n: cannot run');
   }
@@ -441,11 +450,14 @@ void main(List<String> arguments) async {
       }
       if (pauseLocation == null) {
         final v = PauseLocation.values.map((d) => nameOf(d)).join(', ');
-        stderr.write('Usage error: unknown pause location (expecting: $v): $arg\n');
+        stderr.write(
+            'Usage error: unknown pause location (expecting: $v): $arg\n');
         exit(2);
       }
     }
   }
+
+  print('Database: ${dbSettings.host}:${dbSettings.port}: ${dbSettings.db}');
 
   // Run the cycles
 
